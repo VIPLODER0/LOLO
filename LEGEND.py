@@ -21,7 +21,7 @@ redeem_codes_collection = db['redeem_codes']
 attack_logs_collection = db['user_attack_logs']
 
 # Bot Configuration
-TELEGRAM_BOT_TOKEN = '7516323992:AAE3l8RPyTjiGOMqiPorwnj1kAbNGhPjH1Y'
+TELEGRAM_BOT_TOKEN = ' token'
 ADMIN_USER_ID = 1929943036 
 ADMIN_USER_ID = 1929943036 
 COOLDOWN_PERIOD = timedelta(minutes=1) 
@@ -795,7 +795,7 @@ async def generate_redeem_code(update: Update, context: CallbackContext):
         return
 
     # Default values
-    max_uses = 100
+    max_uses = 1
     custom_code = None
 
     # Determine if the first argument is a time value or custom code
@@ -1078,4 +1078,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
