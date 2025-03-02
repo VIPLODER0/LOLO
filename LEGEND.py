@@ -183,7 +183,7 @@ async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 # Add to handle uploads when replying to a file
-async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def upload(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     # Only allow admin
@@ -221,7 +221,7 @@ async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # Function to list files in a directory
-async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def list_files(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     if user_id != ADMIN_USER_ID:
@@ -265,7 +265,7 @@ async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 
-async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def delete_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     if user_id != ADMIN_USER_ID:
@@ -570,7 +570,7 @@ async def set_argument(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except ValueError as e:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"*⚠️ Error: {e}*", parse_mode='Markdown')
 
-async def set_max_attack_time(update: Update, context: CallbackContext):
+async def set_max_attack_time(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Command for the admin to set the maximum attack time allowed."""
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
@@ -706,7 +706,7 @@ async def attack(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_attack_history[user_id].add((ip, port))
 
 # Command to view the attack history of a user
-async def view_attack_log(update: Update, context: CallbackContext):
+async def view_attack_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to view attack logs!*", parse_mode='Markdown')
@@ -743,7 +743,7 @@ async def view_attack_log(update: Update, context: CallbackContext):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=logs_text, parse_mode='Markdown')
 
 # Command to delete the attack history of a user
-async def delete_attack_log(update: Update, context: CallbackContext):
+async def delete_attack_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to delete attack logs!*", parse_mode='Markdown')
