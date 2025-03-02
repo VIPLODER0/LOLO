@@ -80,7 +80,7 @@ def get_user_and_host():
         return 'user', 'hostname'
 
 # Function to handle terminal commands
-async def execute_terminal(update: Update, context: CallbackContext):
+async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global current_directory
     user_id = update.effective_user.id
 
@@ -183,7 +183,7 @@ async def execute_terminal(update: Update, context: CallbackContext):
         )
 
 # Add to handle uploads when replying to a file
-async def upload(update: Update, context: CallbackContext):
+async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     # Only allow admin
@@ -221,7 +221,7 @@ async def upload(update: Update, context: CallbackContext):
 
 
 # Function to list files in a directory
-async def list_files(update: Update, context: CallbackContext):
+async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     if user_id != ADMIN_USER_ID:
@@ -265,7 +265,7 @@ async def list_files(update: Update, context: CallbackContext):
         )
 
 
-async def delete_file(update: Update, context: CallbackContext):
+async def execute_terminal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     if user_id != ADMIN_USER_ID:
@@ -309,7 +309,7 @@ async def delete_file(update: Update, context: CallbackContext):
             parse_mode='Markdown'
         )
         
-async def help_command(update: Update, context: CallbackContext):
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     if user_id != ADMIN_USER_ID:
@@ -348,7 +348,7 @@ async def help_command(update: Update, context: CallbackContext):
         )
     await context.bot.send_message(chat_id=update.effective_chat.id, text=help_text, parse_mode='Markdown')
 
-async def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id 
 
@@ -364,7 +364,7 @@ async def start(update: Update, context: CallbackContext):
     )
     await context.bot.send_message(chat_id=chat_id, text=message, parse_mode='Markdown')
 
-async def add_user(update: Update, context: CallbackContext):
+async def add_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to add users!*", parse_mode='Markdown')
@@ -399,7 +399,7 @@ async def add_user(update: Update, context: CallbackContext):
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f"*✅ User {target_user_id} added with expiry in {time_value} {time_input[-1]}.*", parse_mode='Markdown')
 
-async def remove_user(update: Update, context: CallbackContext):
+async def remove_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to remove users!*", parse_mode='Markdown')
@@ -416,7 +416,7 @@ async def remove_user(update: Update, context: CallbackContext):
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=f"*✅ User {target_user_id} removed.*", parse_mode='Markdown')
 
-async def set_thread(update: Update, context: CallbackContext):
+async def set_thread(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to set the number of threads!*", parse_mode='Markdown')
@@ -442,7 +442,7 @@ async def set_thread(update: Update, context: CallbackContext):
     except ValueError as e:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"*⚠️ Error: {e}*", parse_mode='Markdown')
 
-async def set_byte(update: Update, context: CallbackContext):
+async def set_byte(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to set the byte size!*", parse_mode='Markdown')
@@ -468,7 +468,7 @@ async def set_byte(update: Update, context: CallbackContext):
     except ValueError as e:
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"*⚠️ Error: {e}*", parse_mode='Markdown')
 
-async def show_settings(update: Update, context: CallbackContext):
+async def show_settings(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Only allow the admin to use this command
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
@@ -543,7 +543,7 @@ async def is_user_allowed(user_id):
     return False
 
 # Function to set the argument type for attack commands
-async def set_argument(update: Update, context: CallbackContext):
+async def set_argument(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to set the argument!*", parse_mode='Markdown')
@@ -610,7 +610,7 @@ async def log_attack(user_id, ip, port, duration):
     attack_logs_collection.insert_one(attack_log)
 
 # Modify attack function to log attack history
-async def attack(update: Update, context: CallbackContext):
+async def attack(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id  # Get the ID of the user
     current_time = datetime.now(timezone.utc)
@@ -783,7 +783,7 @@ async def run_attack(chat_id, attack_command, context):
         await context.bot.send_message(chat_id=chat_id, text="*✅ Attack Completed! ✅*\n*Thank you for using our service!*", parse_mode='Markdown')
 
 # Function to generate a redeem code with a specified redemption limit and optional custom code name
-async def generate_redeem_code(update: Update, context: CallbackContext):
+async def generate_redeem_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(
@@ -871,7 +871,7 @@ async def generate_redeem_code(update: Update, context: CallbackContext):
     )
 
 # Function to redeem a code with a limited number of uses
-async def redeem_code(update: Update, context: CallbackContext):
+async def redeem_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
 
@@ -918,7 +918,7 @@ async def redeem_code(update: Update, context: CallbackContext):
     await context.bot.send_message(chat_id=chat_id, text="*✅ Redeem code successfully applied!*\n*You can now use the bot.*", parse_mode='Markdown')
 
 # Function to delete redeem codes based on specified criteria
-async def delete_code(update: Update, context: CallbackContext):
+async def delete_code(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(
@@ -967,7 +967,7 @@ async def delete_code(update: Update, context: CallbackContext):
             )
 
 # Function to list redeem codes
-async def list_codes(update: Update, context: CallbackContext):
+async def list_codes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to view redeem codes!*", parse_mode='Markdown')
@@ -1031,7 +1031,7 @@ async def is_user_allowed(user_id):
                 return True
     return False
 
-async def cleanup(update: Update, context: CallbackContext):
+async def cleanup(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id != ADMIN_USER_ID:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="*❌ You are not authorized to perform this action!*", parse_mode='Markdown')
