@@ -137,8 +137,8 @@ int is_expired() {
     time_t now;
     double seconds;
     expiry_date.tm_year = 2025 - 1900; // Year: 2050
-    expiry_date.tm_mon = 11; // Month: 11
-    expiry_date.tm_mday = 27; // Day: 27
+    expiry_date.tm_mon = 04; // Month: 11
+    expiry_date.tm_mday = 02; // Day: 27
 
     time(&now);
     seconds = difftime(mktime(&expiry_date), now);
