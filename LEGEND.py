@@ -6,6 +6,8 @@ import pytz
 import platform
 import random
 import string
+import psutil
+import time
 from telegram import Update
 from telegram.ext import Application, CommandHandler, CallbackContext, filters, MessageHandler
 from pymongo import MongoClient
@@ -16,15 +18,16 @@ MONGO_URI = 'mongodb+srv://nedop17612:ZnXnERM6swVt16gc@cluster0.hhq4k.mongodb.ne
 client = MongoClient(MONGO_URI)
 db = client['TEST']
 users_collection = db['users']
-settings_collection = db['settings-V9']  # A new collection to store global settings
+settings_collection = db['settings']  # A new collection to store global settings
 redeem_codes_collection = db['redeem_codes']
 attack_logs_collection = db['user_attack_logs']
 
 # Bot Configuration
-TELEGRAM_BOT_TOKEN = '7516323992:AAE3l8RPyTjiGOMqiPorwnj1kAbNGhPjH1Y'
+TELEGRAM_BOT_TOKEN = '8012442954:AAEPI5peAHU0Bz-HcMWZzq4DYDyBIM-0RaY'
 ADMIN_USER_ID = 1929943036 
 ADMIN_USER_ID = 1929943036 
-COOLDOWN_PERIOD = timedelta(minutes=1) 
+FEEDBACK_CHAT_ID = 1929943036  # Yahan admin ka Telegram ID set karein
+COOLDOWN_PERIOD = timedelta(minutes=5) 
 user_last_attack_time = {} 
 user_attack_history = {}
 cooldown_dict = {}
@@ -311,7 +314,9 @@ async def help_command(update: Update, context: CallbackContext):
             "*Here are the commands you can use:* \n\n"
             "*🔸 /start* - Start interacting with the bot.\n"
             "*🔸 /attack* - Trigger an attack operation.\n"
+            "*🔸 /plan* - bot plan.\n"
             "*🔸 /redeem* - Redeem a code.\n"
+            "*🔸 /feedback* - send feedback to admin.\n"
         )
     else:
         # Help text for admins (include sensitive commands)
@@ -325,8 +330,10 @@ async def help_command(update: Update, context: CallbackContext):
             "*🔸 /byte [size]* - Set the byte size.\n"
             "*🔸 /show* - Show current settings.\n"
             "*🔸 /users* - List all allowed users.\n"
+            "*🔸 /broadcast* - Broadcast a Message.\n"
             "*🔸 /gen* - Generate a redeem code.\n"
             "*🔸 /redeem* - Redeem a code.\n"
+             "*🔸 /ping* - Check code.\n"
             "*🔸 /cleanup* - Clean up stored data.\n"
             "*🔸 /argument [type]* - Set the (3, 4, or 5).\n"
             "*🔸 /delete_code* - Delete a redeem code.\n"
@@ -534,6 +541,134 @@ async def is_user_allowed(user_id):
             if expiry_date > datetime.now(timezone.utc):
                 return True
     return False
+    
+#Function to broadcast messege 
+async def broadcast_message(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+
+    # Check if the user is admin
+    if user_id != ADMIN_USER_ID:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id, 
+            text="*❌ You are not authorized to broadcast messages!*", 
+            parse_mode='Markdown'
+        )
+        return
+
+    # Ensure that the message is provided
+    if not context.args:
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id, 
+            text="*⚠️ Please provide a message to broadcast!*", 
+            parse_mode='Markdown'
+        )
+        return
+
+    # Get the message to broadcast
+    broadcast_message = ' '.join(context.args)
+
+    # Fetch all users from the database
+    users = users_collection.find()
+
+    # Send the broadcast message to each user
+    for user in users:
+        user_id = user['user_id']
+        try:
+            await context.bot.send_message(
+                chat_id=user_id, 
+                text=f"🔊 *Broadcast Message:* \n\n{broadcast_message}", 
+                parse_mode='Markdown'
+            )
+        except Exception as e:
+            # If there is an error (e.g., user blocked the bot), log it
+            print(f"Failed to send broadcast to user {user_id}: {e}")
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id, 
+        text="*✅ Broadcast message has been sent to all users!*", 
+        parse_mode='Markdown'
+    )
+# function to plan 
+async def plan(update: Update, context: CallbackContext):
+    user_id = update.effective_user.id
+    
+    # User ko promotional message dikhana agar unhone plan nahi liya
+    promotional_message = (
+        "❤️ 🔤🔤🔤🔤🔤 👑 𝗗𝗗𝗢𝗦 𝗕𝗢𝗧 𝗔𝗩𝗔𝗜𝗟𝗔𝗕𝗟𝗘 𝟐𝟒/𝟕  \n"
+        "𝐀𝐕𝐀𝐈𝐋𝐀𝐁𝐋𝐄 🔝\n\n"
+        "👑 𝟭 𝗗𝗔𝗬 :- 130₹ 💎\n"
+        "👑 𝟮 𝗗𝗔𝗬 :- 190₹ 💎\n"
+        "👑 𝟯 𝗗𝗔𝗬 :- 280₹ 💎\n"
+        "👑 𝟰 𝗗𝗔𝗬 :- 350₹ 💎\n"
+        "👑 𝟱 𝗗𝗔𝗬 :- 400₹ 💎\n"
+        "👑 𝟲 𝗗𝗔𝗬 :- 450₹ 💎\n"
+        "👑 𝟳 𝗗𝗔𝗬 :- 500₹ 💎\n\n"
+        "📱 𝐈𝐎𝐒 + 𝐀𝐍𝐃𝐑𝐎𝐈𝐃  𝐃𝐃𝐎𝗦 𝐀𝐕𝐀𝐈𝐋𝐀𝐁𝐋𝐄 ➡️✔️\n\n"
+        "💎 𝗗𝗠 𝗙𝗢𝗥 𝗕𝗨𝗬 :- \n"
+        "@NeoModEngine  @MRSHAILU01"
+    )
+
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=promotional_message, parse_mode='Markdown')
+    
+    import psutil
+import time
+from datetime import timedelta
+
+# Bot start hone ka time track karna
+BOT_START_TIME = time.time()
+
+async def status(update: Update, context: CallbackContext):
+    # Bot running time calculate karna
+    uptime_seconds = int(time.time() - BOT_START_TIME)
+    uptime_str = str(timedelta(seconds=uptime_seconds))  # Format: 3D-6H-15M-5S
+
+    # VPS system stats lena
+    cpu_usage = psutil.cpu_percent(interval=1)  # CPU Usage %
+    ram_usage = psutil.virtual_memory().percent  # RAM Usage %
+
+    # Status Message Format
+    status_message = (
+        "📊 *Bot Status:*\n\n"
+        f"⏳ *Bot Running Time:* {uptime_str}\n"
+        f"💻 *CPU Usage:* {cpu_usage}%\n"
+        f"💾 *RAM Usage:* {ram_usage}%"
+    )
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id, text=status_message, parse_mode="Markdown"
+    )
+# feedback function 
+async def feedback(update: Update, context: CallbackContext):
+    user = update.effective_user
+    message = update.message
+
+    # Agar user ne photo bheji hai
+    if message.photo:
+        # Photo ka file_id le rahe hain
+        photo = message.photo[-1].file_id
+        feedback_text = message.caption if message.caption else "No text provided"
+        
+        # Photo aur feedback ko admin ko bhejna
+        await context.bot.send_photo(
+            chat_id=FEEDBACK_CHAT_ID, 
+            photo=photo, 
+            caption=f"📬 *New Feedback from @{user.username} ({user.id}):*\n\n{feedback_text}", 
+            parse_mode="Markdown"
+        )
+        # User ko confirmation dena
+        await message.reply_text("✅ Your feedback (photo) has been sent!")
+
+    else:
+        await message.reply_text("❌ Please send a photo with your feedback.")
+
+#ping check function 
+async def ping(update: Update, context: CallbackContext):
+    start_time = time.time()
+    message = await update.message.reply_text("🏓 Pinging...")
+    end_time = time.time()
+
+    latency = (end_time - start_time) * 1000  # Convert seconds to milliseconds
+    await message.edit_text(f"🏓 Pong! `{int(latency)}ms`", parse_mode="Markdown")
 
 # Function to set the argument type for attack commands
 async def set_argument(update: Update, context: CallbackContext):
@@ -795,7 +930,7 @@ async def generate_redeem_code(update: Update, context: CallbackContext):
         return
 
     # Default values
-    max_uses = 1
+    max_uses = 10
     custom_code = None
 
     # Determine if the first argument is a time value or custom code
@@ -1062,8 +1197,13 @@ def main():
     application.add_handler(CommandHandler("gen", generate_redeem_code))
     application.add_handler(CommandHandler("redeem", redeem_code))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("ping", ping))
+    application.add_handler(MessageHandler(filters.PHOTO, feedback))
+    application.add_handler(CommandHandler("broadcast", broadcast_message))
     application.add_handler(CommandHandler("cleanup", cleanup))
+    application.add_handler(CommandHandler("plan", plan))  # For users to see the promotional plan
     application.add_handler(CommandHandler("argument", set_argument))
+    application.add_handler(CommandHandler("status", status))
     application.add_handler(CommandHandler("delete_code", delete_code))
     application.add_handler(CommandHandler("list_codes", list_codes))
     application.add_handler(CommandHandler("set_time", set_max_attack_time))
